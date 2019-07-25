@@ -1,0 +1,42 @@
+O projeto solicitado exige uma stack bem grande de bibliotecas para funcionar e foi implementado na linguagem Scala.
+
+Na execução dele, optou-se pela maior simplicidade possível nas especificações para deixar o código fácil de entender, sem nenhuma lógica
+muito complexa.
+
+A API REST foi implementada da seguinte forma:
+
+GET /list-planets -> Retorna a lista completa de planetas no banco de dados
+GET /planet-id/numero -> Retorna o planeta cujo id é especificado no número
+GET /planet-name/cadeia -> Retorna o planeta cujo nome é o especificado na cadeia
+POST /add-planet -> Lê o conteúdo no body da requisição, do tipo application-json, que contém o nome, clima, terreno, e número de filmes que apareceu, e insere no banco de dados
+DELETE /delete-planet-id/numero -> Remove o planeta cujo id é especificado no número
+
+Os testes foram feitos no firefox usando a extensão RESTED: https://addons.mozilla.org/pt-BR/firefox/addon/rested/
+
+Para adicionar um planeta, o JSON enviado no post deve conter os campos "name", "climate", "terrain", e "numFilms".
+
+O banco de dados foi implementado no PostgreSQL, com os parâmetros típicos. Ele responde no localhost, na porta 5432, o nome
+do database é "postgres", o usuário e a senha também são "postgres", tal informação pode ser obtida lendo o arquivo application.conf
+
+O banco de dados possui apenas uma tabela com as informações dos planetas: seu id, que é a chave primária, seu nome, clima, terreno, e
+número de aparições nos filmes. As queries de SQL usadas para criar e popular o banco de dados estão nos arquivos creation.sql e
+populate.sql
+
+As dependências do projeto podem ser vistas em build.sbt, elas são, essencialmente:
+
+* Akka-Http e suas dependências, akka-actor e akka-stream, necessário para rodar um servidor Http
+* Akka-Spray-Json, para fazer o marshalling, que converte os dados no formato reconhecido da linguagem Scala para o JSON, que é transmitido nas requisições HTTP.
+* Slick, bem como HikariCP, biblioteca de conexões, e SL4J, de log, embora usamos SL4J-nop, que não faz nenhum logging. O Slick é necessário para executar queries SQL no banco de dados.
+* PostgreSQL-JDBC, o driver do postgres para JDBC, que faz queries especificamente no PostgreSQL.
+
+O código pode ser executado pela linha de comando:
+
+$ sbt update
+$ sbt compile
+$ sbt run
+
+O comando update baixa as dependências necessárias para o projeto, enquanto o compile compila o código, e o run o executa. Ao executar, um servidor HTTP irá responder requisições em localhost:8080 até o usuário apertar a tecla ENTER no terminal que invocou o servidor.
+
+A forma mais simples de criar requisições e observar as respostas é com a extensão RESTED, do Firefox.
+
+O código em Server.scala possui diversas case classes para conter os dados das requisições, além de funções para executar queries SQL. Ele também usa uma DSL (Domain Specific Language) para fazer o matching das URLs que devem ser respondidas. Preceitos de Engenharia de Software recomendam que essas funções fossem implementadas em arquivos separados. Porém, considerando que o programa inteiro tem menos de 150 linhas, consideramos a separação em vários arquivos um preciosismo desnecessário.
